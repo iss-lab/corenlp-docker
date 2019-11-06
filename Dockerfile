@@ -1,21 +1,15 @@
-FROM java:jre-alpine
+FROM openjdk:8-alpine
 
-MAINTAINER Vineet Verma <vineetverma.it@gmail.com>
+ARG VERSION=2018-10-05
+ARG PORT=9000
 
-RUN apk add --update --no-cache \
-	 unzip \
-	 wget
+ENV PORT=${PORT:-9000}
+EXPOSE ${PORT}
 
-RUN wget http://nlp.stanford.edu/software/stanford-corenlp-full-2018-02-27.zip
-RUN unzip stanford-corenlp-full-2018-02-27.zip && \
-	rm stanford-corenlp-full-2018-02-27.zip
+RUN wget https://nlp.stanford.edu/software/stanford-corenlp-full-${VERSION}.zip \
+    && unzip stanford-corenlp-full-${VERSION}.zip \
+    && rm stanford-corenlp-full-${VERSION}.zip
+WORKDIR /stanford-corenlp-full-${VERSION}
 
-WORKDIR stanford-corenlp-full-2018-02-27
-
-RUN export CLASSPATH="`find . -name '*.jar'`"
-
-ENV PORT 9000
-
-EXPOSE $PORT
-
-CMD java -cp "*" -mx8g edu.stanford.nlp.pipeline.StanfordCoreNLPServer
+ENV CLASSPATH /stanford-corenlp-full-${VERSION}/*
+CMD java -Xmx8g edu.stanford.nlp.pipeline.StanfordCoreNLPServer
